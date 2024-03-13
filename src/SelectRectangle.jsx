@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 class Coordinates {
   constructor(x, y) {
@@ -12,17 +12,25 @@ const SelectRectangle = ({ cursorX, cursorY }) => {
   const [start, setStart] = useState({ x: 0, y: 0 });
   const [end, setEnd] = useState({ x: 0, y: 0 });
 
+  useEffect(() => {
+    if (isSelecting) {
+      setEnd(new Coordinates(cursorX, cursorY));
+    } else {
+      setStart(new Coordinates(cursorX, cursorY));
+      setEnd(new Coordinates(cursorX, cursorY));
+    }
+  }, [cursorX, cursorY]);
+
   const handleMouseDown = (e) => {
     setIsSelecting(true);
     setStart(new Coordinates(e.clientX, e.clientY));
   };
 
   const handleMouseMove = (e) => {
-    if (isSelecting) {
-      setEnd(new Coordinates(cursorX, cursorY));
-    } else {
-      setStart(new Coordinates(cursorX, cursorY));
-      setEnd(new Coordinates(cursorX, cursorY));
+    // sometimes handleMouseup is not triggered when
+    // the mouse is released very quickly or outside the window
+    if (isSelecting && e.buttons === 0) {
+      setIsSelecting(false);
     }
   };
 
@@ -51,8 +59,8 @@ const SelectRectangle = ({ cursorX, cursorY }) => {
       className="bg-white\0 absolute size-4 -translate-x-1/2 -translate-y-1/2 transform  rounded-full shadow-lg"
       style={{ top: cursorY, left: cursorX }}
       onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      onMouseMove={handleMouseMove}
     >
       {isSelecting && (
         <div
